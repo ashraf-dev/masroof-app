@@ -1,0 +1,111 @@
+# Codemagic CI/CD for Masroofy (Expo SDK 54, Continuous Native Generation).
+# The android/ and ios/ folders are generated on every build with `expo prebuild`.
+# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-react-native-app/
+
+definitions:
+  environment: &base_env
+    node: 22.17.0
+    vars:
+      EXPO_PUBLIC_SUPABASE_URL: https://vfpbvnvyekfroxdhtysl.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_TSdMb8vttFyQQtZbpqKhbA_YxWl7er-
+  scripts:
+    - &install
+      name: Install dependencies
+      script: npm ci
+    - &checks
+      name: Typecheck & lint
+      script: |
+        npm run typecheck
+        npx expo lint
+    - &android_prebuild
+      name: Generate Android project
+      script: |
+        npx expo prebuild --platform android --no-install --clean
+        echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
+        sed -i.bak "s/versionCode 1$/versionCode $BUILD_NUMBER/" android/app/build.gradle
+
+workflows:
+  # Installable test APK — needs no signing setup (signed with the debug key).
+  android-apk:
+    name: Android test APK
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *base_env
+      java: 17
+    scripts:
+      - *install
+      - *checks
+      - *android_prebuild
+      - name: Build APK
+        script: cd android && ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
+
+  # Google Play release (AAB). Upload your keystore in
+  # Codemagic → Team settings → Code signing identities → Android keystores
+  # with the reference name "masroofy_keystore".
+  android-release:
+    name: Android release (Play Store)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      <<: *base_env
+      java: 17
+      android_signing:
+        - masroofy_keystore
+    scripts:
+      - *install
+      - *checks
+      - *android_prebuild
+      - name: Use release keystore
+        script: node scripts/android-release-signing.js
+      - name: Build AAB and APK
+        script: cd android && ./gradlew bundleRelease assembleRelease
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/outputs/apk/release/*.apk
+    # publishing:
+    #   google_play:
+    #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+    #     track: internal
+
+  # iOS → TestFlight. Requires an Apple Developer account and an
+  # App Store Connect API key added in Codemagic → Team settings →
+  # Team integrations → Developer Portal, named "codemagic".
+  ios-release:
+    name: iOS release (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      <<: *base_env
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.masroofy.app
+    scripts:
+      - *install
+      - *checks
+      - name: Generate iOS project
+        script: npx expo prebuild --platform ios --no-install --clean
+      - name: Install pods
+        script: cd ios && pod install
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Set build number
+        script: cd ios && agvtool new-version -all $BUILD_NUMBER
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/Masroofy.xcworkspace \
+            --scheme Masroofy
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "مصاريفي",
+    "name": "Masroofy",
     "slug": "masroofy",
     "scheme": "masroofy",
     "version": "1.0.0",
@@ -18,8 +18,11 @@
       "bundleIdentifier": "com.masroofy.app",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "NSFaceIDUsageDescription": "نستخدم Face ID لقفل التطبيق وحماية بياناتك"
-      }
+        "NSFaceIDUsageDescription": "نستخدم Face ID لقفل التطبيق وحماية بياناتك",
+        "CFBundleDevelopmentRegion": "ar",
+        "CFBundleAllowMixedLocalizations": true
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.masroofy.app",
@@ -34,7 +37,8 @@
         "USE_FINGERPRINT",
         "POST_NOTIFICATIONS",
         "SCHEDULE_EXACT_ALARM"
-      ]
+      ],
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -66,6 +70,10 @@
     "extra": {
       "supportsRTL": true,
       "forcesRTL": false
+    },
+    "locales": {
+      "ar": "./locales/ar.json",
+      "en": "./locales/en.json"
     }
   }
 }

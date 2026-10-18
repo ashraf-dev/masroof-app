@@ -60,6 +60,18 @@ npx eas-cli@latest build --profile development --platform android   # or ios
 
 Checks: `npm run typecheck` and `npm run lint`.
 
+## Building on Codemagic
+
+`codemagic.yaml` has three workflows. Connect the repo in Codemagic, then start one from **Start new build**:
+
+| Workflow | Output | Setup needed |
+| --- | --- | --- |
+| `android-apk` | Installable test APK | None |
+| `android-release` | Signed AAB + APK for Google Play | Upload a keystore named `masroofy_keystore` (Team settings → Code signing identities → Android keystores) |
+| `ios-release` | IPA uploaded to TestFlight | Apple Developer account; add an App Store Connect API key integration named `codemagic`; create the app `com.masroofy.app` in App Store Connect |
+
+Each build runs `expo prebuild` to generate the native projects, uses Codemagic's build number as the version code / build number, and runs the typecheck and lint first.
+
 ## Supabase dashboard setup still needed
 
 These can't be set from code and must be configured in the Supabase dashboard (Authentication):

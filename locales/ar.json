@@ -1,0 +1,9 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "مصاريفي",
+    "NSFaceIDUsageDescription": "نستخدم Face ID لقفل التطبيق وحماية بياناتك"
+  },
+  "android": {
+    "app_name": "مصاريفي"
+  }
+}
