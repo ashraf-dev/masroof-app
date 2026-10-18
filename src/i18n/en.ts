@@ -45,6 +45,7 @@ export const en: Dict = {
     haveAccount: 'Already have an account? Sign in',
     checkEmail: 'We sent you a confirmation email. Open it, then sign in.',
     invalid: 'Check your details and try again',
+    emailConfirmed: 'Email confirmed ✅ Sign in with your email and password.',
   },
   onboarding: {
     title: "Let's set up your account",

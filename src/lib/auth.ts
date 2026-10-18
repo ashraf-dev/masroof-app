@@ -6,7 +6,8 @@ import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const redirectTo = makeRedirectUri({ scheme: 'masroofy', path: 'auth-callback' });
+/** Deep link back into the app, used by OAuth and by the email confirmation link. */
+export const redirectTo = makeRedirectUri({ scheme: 'masroofy', path: 'auth-callback' });
 
 /** OAuth via the system browser using the PKCE flow. */
 export async function signInWithOAuth(provider: 'google' | 'apple') {

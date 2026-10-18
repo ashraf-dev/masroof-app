@@ -86,7 +86,7 @@ Each build runs `expo prebuild` to generate the native projects, uses Codemagic'
 
 These can't be set from code and must be configured in the Supabase dashboard (Authentication):
 
-1. **URL configuration** → add `masroofy://auth-callback` (and `exp://**` for development) to Redirect URLs.
+1. **URL configuration** → add `masroofy://**` (and `exp://**` for development) to Redirect URLs. Without it, email confirmation links fall back to the Site URL (`http://localhost:3000` by default).
 2. **Providers → Google**: add the Google OAuth client ID/secret.
 3. **Providers → Apple**: add the Services ID / key; for native iOS sign-in add the bundle id `com.masroofy.app`.
 4. **Providers → Phone**: enable it and connect an SMS provider (Twilio, MessageBird, Vonage…).

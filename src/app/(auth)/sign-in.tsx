@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip, Field, styles } from '@/components/ui';
 import { colors, spacing } from '@/components/theme';
 import { useT } from '@/i18n';
-import { normalizePhone, signInWithApple, signInWithOAuth } from '@/lib/auth';
+import { normalizePhone, redirectTo, signInWithApple, signInWithOAuth } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
 type Method = 'email' | 'phone';
@@ -40,7 +40,7 @@ export default function SignIn() {
   const submitEmail = () =>
     run('email', async () => {
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
+        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: redirectTo } });
         if (error) throw error;
         if (!data.session) Alert.alert(t('auth.signUp'), t('auth.checkEmail'));
       } else {
