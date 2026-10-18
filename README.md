@@ -68,7 +68,17 @@ Checks: `npm run typecheck` and `npm run lint`.
 | --- | --- | --- |
 | `android-apk` | Installable test APK | None |
 | `android-release` | Signed AAB + APK for Google Play | Upload a keystore named `masroofy_keystore` (Team settings → Code signing identities → Android keystores) |
-| `ios-release` | IPA uploaded to TestFlight | Apple Developer account; add an App Store Connect API key integration named `codemagic`; create the app `com.masroofy.app` in App Store Connect |
+| `ios-release` | IPA uploaded to TestFlight | See "iOS signing" below |
+
+### iOS signing
+
+1. **Apple Developer portal → Identifiers:** register the App ID `com.masroofy.app` and enable **Push Notifications** and **Sign In with Apple**.
+2. **App Store Connect → Apps:** create a new app with that bundle id.
+3. **App Store Connect → Users and Access → Integrations → App Store Connect API:** create a key with the *App Manager* role. In Codemagic → Team settings → Team integrations → Developer Portal, add it with the name `codemagic`.
+4. Generate a certificate private key: `ssh-keygen -t rsa -b 2048 -m PEM -f masroofy_cert_key -q -N ""`.
+5. Codemagic → app → Environment variables: add `CERTIFICATE_PRIVATE_KEY` with the contents of `masroofy_cert_key`, marked **Secret**, in the group `ios_credentials`.
+
+The workflow then creates (or reuses) the distribution certificate and App Store provisioning profile on every build.
 
 Each build runs `expo prebuild` to generate the native projects, uses Codemagic's build number as the version code / build number, and runs the typecheck and lint first.
 

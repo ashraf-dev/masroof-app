@@ -70,9 +70,15 @@ workflows:
     #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
     #     track: internal
 
-  # iOS → TestFlight. Requires an Apple Developer account and an
-  # App Store Connect API key added in Codemagic → Team settings →
-  # Team integrations → Developer Portal, named "codemagic".
+  # iOS → TestFlight. Requires:
+  # 1. An App Store Connect API key added in Codemagic → Team settings →
+  #    Team integrations → Developer Portal, named "codemagic".
+  # 2. An environment variable group "ios_credentials" containing
+  #    CERTIFICATE_PRIVATE_KEY (an RSA private key; see README). Codemagic uses
+  #    it to create/fetch the distribution certificate and App Store profile.
+  # 3. The bundle id com.masroofy.app registered in the Apple Developer portal
+  #    with the Push Notifications and Sign In with Apple capabilities, and an
+  #    app created for it in App Store Connect.
   ios-release:
     name: iOS release (TestFlight)
     instance_type: mac_mini_m2
@@ -83,9 +89,12 @@ workflows:
       <<: *base_env
       xcode: latest
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.masroofy.app
+      groups:
+        - ios_credentials
+      vars:
+        EXPO_PUBLIC_SUPABASE_URL: https://vfpbvnvyekfroxdhtysl.supabase.co
+        EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_TSdMb8vttFyQQtZbpqKhbA_YxWl7er-
+        BUNDLE_ID: com.masroofy.app
     scripts:
       - *install
       - *checks
@@ -93,6 +102,12 @@ workflows:
         script: npx expo prebuild --platform ios --no-install --clean
       - name: Install pods
         script: cd ios && pod install
+      - name: Set up keychain
+        script: keychain initialize
+      - name: Fetch or create signing files
+        script: app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_STORE --create
+      - name: Add certificates to keychain
+        script: keychain add-certificates
       - name: Set up code signing
         script: xcode-project use-profiles
       - name: Set build number
